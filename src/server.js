@@ -17,8 +17,6 @@ app.post('/account', (req, res) => {
   
   if(customersExists) return res.status(400).json({error: 'usuário já exist'})
 
-  const id = uuid()
-
   customers.push({
     name,
     cpf,
@@ -26,6 +24,17 @@ app.post('/account', (req, res) => {
     statement: []
   })
   return res.status(201).send('criado')
+})
+
+app.get("/statement/:cpf", (req, res) => {
+  const { cpf } = req.params
+
+  const customer = customers.find(curtomer => curtomer.cpf === cpf)
+
+  if(!customer) return res.status(400).json({error: "Cliente não encontrado."})
+
+  return res.status(200).json(customer.statement)
+
 })
 
 app.listen(3333, console.log('server running'))
