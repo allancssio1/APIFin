@@ -7,6 +7,18 @@ app.use(express.json())
 
 const customers = []
 
+const verifyIfExistsAccountCPF = (req, res, next) => {
+  const { cpf } = req.headers
+
+  const customer = customers.find(curtomer => curtomer.cpf === cpf)
+
+  if(!customer) return res.status(400).json({error: "Cliente não encontrado."})
+
+  req.customer = customer
+
+  return next()
+}
+
 app.post('/account', (req, res) => {
   const {name, cpf} = req.body
 
@@ -26,15 +38,17 @@ app.post('/account', (req, res) => {
   return res.status(201).send('criado')
 })
 
-app.get("/statement/:cpf", (req, res) => {
-  const { cpf } = req.params
-
-  const customer = customers.find(curtomer => curtomer.cpf === cpf)
-
-  if(!customer) return res.status(400).json({error: "Cliente não encontrado."})
+app.get("/statement", verifyIfExistsAccountCPF, (req, res) => {
+  const {customer} = req
 
   return res.status(200).json(customer.statement)
 
+})
+
+app.post("/deposit", verifyIfExistsAccountCPF, (req, res) => {
+  const {customer} = req
+
+  
 })
 
 app.listen(3333, console.log('server running'))
