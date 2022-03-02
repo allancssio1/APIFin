@@ -46,9 +46,18 @@ app.get("/statement", verifyIfExistsAccountCPF, (req, res) => {
 })
 
 app.post("/deposit", verifyIfExistsAccountCPF, (req, res) => {
+  const {description, amount} = req.body
   const {customer} = req
+  const statementOperation = {
+    description,
+    amount,
+    create_at: new Date(),
+    type: 'credit'
+  }
 
-  
+  customer.statement.push(statementOperation)
+
+  return res.status(201).send({success: true, mensage: 'Depósito adicionado com sucesso!'})
 })
 
 app.listen(3333, console.log('server running'))
