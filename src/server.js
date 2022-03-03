@@ -19,6 +19,19 @@ const verifyIfExistsAccountCPF = (req, res, next) => {
   return next()
 }
 
+const getBalace = (statement) => {
+  //reduce recebe um acumulador e o pŕoximo na lista para ser o valor a ser calculado.
+  const balance = statement.reduce((acumulator, operation) => {
+    if (operation.type === 'credit') {
+      return acumulator + operation.amount
+    }else {
+      return acumulator - operation.amount
+    }
+  }, 0)
+
+  return balance
+}
+
 app.post('/account', (req, res) => {
   const {name, cpf} = req.body
 
@@ -57,7 +70,32 @@ app.post("/deposit", verifyIfExistsAccountCPF, (req, res) => {
 
   customer.statement.push(statementOperation)
 
-  return res.status(201).send({success: true, mensage: 'Depósito adicionado com sucesso!'})
+  return res
+    .status(201)
+    .send({
+      success: true, 
+      mensage: 'Depósito adicionado com sucesso!'
+    })
+})
+
+app.post("/withdraw", verifyIfExistsAccountCPF, (req, res) => {
+  const {amount} = req.body
+  const {customer} = req
+  const balance = getBalace(customer.statement)
+
+  if(balance < amount) return res.status(400).send({
+    error: 'Valor insuficiente!'
+  })
+
+  const statementOperation = {
+    amount,
+    create_at: new Date(),
+    type: "debit"
+  }
+
+  customer.statement.push(statementOperation)
+
+  return res.status(201). send({success: true, message: "Saque efetuado com sucesso!"})
 })
 
 app.listen(3333, console.log('server running'))
